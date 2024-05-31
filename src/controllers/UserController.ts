@@ -4,8 +4,8 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { User } from "../models/User";
 const bcrypt = require('bcrypt');
-import { body, validationResult } from "express-validator";
 import { validate } from "class-validator";
+import { generateToken } from "../utils/jwt";
 
 export const getUser = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -81,3 +81,31 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
   
 
 };
+
+export const loginUser = async (req: Request, res: Response): Promise<Response> => {
+
+  try{
+    const { email, password } = req.body;
+    const userRepository = getRepository(User);
+    const user = await userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+
+    const token = generateToken(user.id);
+
+    return res.status(200).json({ token, user });
+  } catch (error) {
+      console.error("Error logging in:", error);
+      return res.status(500).json({ message: "Internal server error" });
+  }
+
+}
