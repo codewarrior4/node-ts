@@ -1,7 +1,6 @@
-// src/models/Transaction.ts
-
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-import { User } from "./User";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { IsNotEmpty, IsNumber } from 'class-validator';
+import { User } from './User';
 
 @Entity()
 export class Transaction {
@@ -9,11 +8,14 @@ export class Transaction {
   id: number;
 
   @Column()
+  @IsNotEmpty({ message: 'Amount is required' })
+  @IsNumber({}, { message: 'Amount must be a number' })
   amount: number;
 
-  @Column()
-  date: Date;
-
-  @ManyToOne(() => User, user => user.transactions)
+  @ManyToOne(type => User, user => user.transactions)
+  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }

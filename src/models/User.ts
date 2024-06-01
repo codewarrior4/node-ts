@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany,CreateDateColumn,  } from "typeorm";
 import { IsEmail, IsNotEmpty, Length } from "class-validator";
 import { Transaction } from "./Transaction";
+import { getRepository } from "typeorm";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -46,4 +47,11 @@ export class User {
 //     this.email = '';
 //     this.password = '';
 //   }
+}
+
+
+export async function getUserByEmail(email: string) {
+  const userRepository = getRepository(User);
+  const user = await userRepository.findOne({ where: { email } });
+  return user;
 }
